@@ -8,6 +8,7 @@ use ReflectionClass;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use function constant;
+use function count;
 use function in_array;
 use function is_string;
 use function method_exists;
@@ -41,16 +42,72 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
             ->children()
-                ->scalarNode('dir_name')->defaultValue('%kernel.root_dir%/DoctrineMigrations')->cannotBeEmpty()->end()
-                ->scalarNode('namespace')->defaultValue('Application\Migrations')->cannotBeEmpty()->end()
-                ->scalarNode('table_name')->defaultValue('migration_versions')->cannotBeEmpty()->end()
-                ->scalarNode('column_name')->defaultValue('version')->end()
-                ->scalarNode('column_length')->defaultValue(14)->end()
-                ->scalarNode('executed_at_column_name')->defaultValue('executed_at')->end()
-                ->scalarNode('all_or_nothing')->defaultValue(false)->end()
                 ->scalarNode('name')->defaultValue('Application Migrations')->end()
-                ->scalarNode('custom_template')->defaultValue(null)->end()
-                ->scalarNode('organize_migrations')->defaultValue(false)
+                ->arrayNode('migrations_paths')
+
+                    ->info('A list of pairs namespace/path where to look for migrations.')
+                    ->requiresAtLeastOneElement()
+                    ->useAttributeAsKey('name')
+                    ->defaultValue(['%kernel.root_dir%/DoctrineMigrations' => 'Application\Migrations'])
+                    ->prototype('scalar')->end()
+                    ->validate()
+                        ->ifTrue(static function ($v) {
+                            return count($v) === 0;
+                        })
+                        ->thenInvalid('At least one migrations path must be specified.')
+                    ->end()
+                 ->end()
+
+                ->arrayNode('storage')
+                    ->addDefaultsIfNotSet()
+                    ->info('Storage to use for migration status metadata.')
+                    ->children()
+                        ->scalarNode('id')
+                            ->info('Custom metadata storage service ID.')
+                            ->defaultValue(null)
+                        ->end()
+                        ->arrayNode('table_storage')
+                            ->addDefaultsIfNotSet()
+                            ->info('The default metadata storage, implemented as table in the database.')
+                            ->children()
+                                ->scalarNode('table_name')->defaultValue(null)->cannotBeEmpty()->end()
+                                ->scalarNode('version_column_name')->defaultValue(null)->end()
+                                ->scalarNode('version_column_length')->defaultValue(null)->end()
+                                ->scalarNode('executed_at_column_name')->defaultValue(null)->end()
+                                ->scalarNode('execution_time_column_name')->defaultValue(null)->end()
+                            ->end()
+                        ->end()
+                    ->end()
+
+                ->end()
+                ->arrayNode('migrations')
+                    ->info('A list of migrations to load in addition the the one discovered via "migrations_paths".')
+                    ->prototype('scalar')->end()
+                    ->defaultValue([])
+                ->end()
+                ->scalarNode('sorter')
+                    ->info('Alternative migrations sorting algorithm')
+                    ->defaultValue(null)
+                ->end()
+                ->scalarNode('connection')
+                    ->info('Connection name to use for the migrations database.')
+                    ->defaultValue(null)
+                ->end()
+                ->scalarNode('em')
+                    ->info('Entity manager name to use for the migrations database (available when doctrine/orm is installed).')
+                    ->defaultValue(null)
+                ->end()
+                ->scalarNode('all_or_nothing')
+                    ->info('Run all migrations in a transaction.')
+                    ->defaultValue(false)
+                ->end()
+                ->scalarNode('check_database_platform')->defaultValue(true)->end()
+                ->scalarNode('custom_template')
+                    ->info('Custom template path for generated migration classes.')
+                    ->defaultValue(null)
+                ->end()
+                ->scalarNode('organize_migrations')
+                    ->defaultValue(false)
                     ->info('Organize migrations mode. Possible values are: "BY_YEAR", "BY_YEAR_AND_MONTH", false')
                     ->validate()
                         ->ifTrue(static function ($v) use ($organizeMigrationModes) {
@@ -58,7 +115,7 @@ class Configuration implements ConfigurationInterface
                                 return false;
                             }
 
-                            if (is_string($v) && in_array(strtoupper($v), $organizeMigrationModes)) {
+                            if (is_string($v) && in_array(strtoupper($v), $organizeMigrationModes, true)) {
                                 return false;
                             }
 

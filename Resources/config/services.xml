@@ -5,35 +5,74 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
-        <service id="doctrine_migrations.diff_command" class="Doctrine\Bundle\MigrationsBundle\Command\MigrationsDiffDoctrineCommand">
-            <tag name="console.command" />
+
+        <service id="doctrine.migrations.di" class="Doctrine\Migrations\DependencyFactory">
+            <argument id="doctrine.migrations.configuration" type="service"/>
         </service>
-        <service id="doctrine_migrations.dump_schema_command" class="Doctrine\Bundle\MigrationsBundle\Command\MigrationsDumpSchemaDoctrineCommand">
-            <tag name="console.command" />
+
+        <service id="doctrine.migrations.configuration" class="Doctrine\Migrations\Configuration\Configuration">
+
         </service>
-        <service id="doctrine_migrations.execute_command" class="Doctrine\Bundle\MigrationsBundle\Command\MigrationsExecuteDoctrineCommand">
-            <tag name="console.command" />
+
+        <service id="doctrine_migrations.diff_command" class="Doctrine\Migrations\Tools\Console\Command\DiffCommand">
+            <argument>doctrine:migrations:diff</argument>
+            <argument type="service" id="doctrine.migrations.di"/>
+
+            <tag name="console.command" command="doctrine:migrations:diff" />
         </service>
-        <service id="doctrine_migrations.generate_command" class="Doctrine\Bundle\MigrationsBundle\Command\MigrationsGenerateDoctrineCommand">
-            <tag name="console.command" />
+        <service id="doctrine_migrations.dump_schema_command" class="Doctrine\Migrations\Tools\Console\Command\DumpSchemaCommand">
+            <argument>doctrine:migrations:dump-schema</argument>
+            <argument type="service" id="doctrine.migrations.di"/>
+
+            <tag name="console.command"  command="doctrine:migrations:dump-schema"/>
         </service>
-        <service id="doctrine_migrations.latest_command" class="Doctrine\Bundle\MigrationsBundle\Command\MigrationsLatestDoctrineCommand">
-            <tag name="console.command" />
+        <service id="doctrine_migrations.execute_command" class="Doctrine\Migrations\Tools\Console\Command\ExecuteCommand">
+            <argument>doctrine:migrations:execute</argument>
+            <argument type="service" id="doctrine.migrations.di"/>
+
+            <tag name="console.command"  command="doctrine:migrations:execute"/>
         </service>
-        <service id="doctrine_migrations.migrate_command" class="Doctrine\Bundle\MigrationsBundle\Command\MigrationsMigrateDoctrineCommand">
-            <tag name="console.command" />
+        <service id="doctrine_migrations.generate_command" class="Doctrine\Migrations\Tools\Console\Command\GenerateCommand">
+            <argument>doctrine:migrations:generate</argument>
+            <argument type="service" id="doctrine.migrations.di"/>
+
+            <tag name="console.command"  command="doctrine:migrations:generate"/>
         </service>
-        <service id="doctrine_migrations.rollup_command" class="Doctrine\Bundle\MigrationsBundle\Command\MigrationsRollupDoctrineCommand">
-            <tag name="console.command" />
+        <service id="doctrine_migrations.latest_command" class="Doctrine\Migrations\Tools\Console\Command\LatestCommand">
+            <argument>doctrine:migrations:latest</argument>
+            <argument type="service" id="doctrine.migrations.di"/>
+
+            <tag name="console.command"  command="doctrine:migrations:latest"/>
         </service>
-        <service id="doctrine_migrations.status_command" class="Doctrine\Bundle\MigrationsBundle\Command\MigrationsStatusDoctrineCommand">
-            <tag name="console.command" />
+        <service id="doctrine_migrations.migrate_command" class="Doctrine\Migrations\Tools\Console\Command\MigrateCommand">
+            <argument>doctrine:migrations:migrate</argument>
+            <argument type="service" id="doctrine.migrations.di"/>
+
+            <tag name="console.command"  command="doctrine:migrations:migrate" />
         </service>
-        <service id="doctrine_migrations.up_to_date_command" class="Doctrine\Bundle\MigrationsBundle\Command\MigrationsUpToDateDoctrineCommand">
-            <tag name="console.command" />
+        <service id="doctrine_migrations.rollup_command" class="Doctrine\Migrations\Tools\Console\Command\RollupCommand">
+            <argument>doctrine:migrations:rollup</argument>
+            <argument type="service" id="doctrine.migrations.di"/>
+
+            <tag name="console.command" command="doctrine:migrations:rollup" />
         </service>
-        <service id="doctrine_migrations.version_command" class="Doctrine\Bundle\MigrationsBundle\Command\MigrationsVersionDoctrineCommand">
-            <tag name="console.command" />
+        <service id="doctrine_migrations.status_command" class="Doctrine\Migrations\Tools\Console\Command\StatusCommand">
+            <argument>doctrine:migrations:status</argument>
+            <argument type="service" id="doctrine.migrations.di"/>
+
+            <tag name="console.command" command="doctrine:migrations:status" />
+        </service>
+        <service id="doctrine_migrations.up_to_date_command" class="Doctrine\Migrations\Tools\Console\Command\UpToDateCommand">
+            <argument>doctrine:migrations:up-to-date</argument>
+            <argument type="service" id="doctrine.migrations.di"/>
+
+            <tag name="console.command" command="doctrine:migrations:up-to-date" />
+        </service>
+        <service id="doctrine_migrations.version_command" class="Doctrine\Migrations\Tools\Console\Command\VersionCommand">
+            <argument>doctrine:migrations:version</argument>
+            <argument type="service" id="doctrine.migrations.di"/>
+
+            <tag name="console.command" command="doctrine:migrations:version" />
         </service>
     </services>
 
