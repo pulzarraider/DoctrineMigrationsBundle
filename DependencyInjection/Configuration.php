@@ -41,13 +41,16 @@ class Configuration implements ConfigurationInterface
         $organizeMigrationModes = $this->getOrganizeMigrationsModes();
 
         $rootNode
+            ->fixXmlConfig('migration', 'migrations')
+            ->fixXmlConfig('migrations_path', 'migrations_paths')
             ->children()
                 ->scalarNode('name')->defaultValue('Application Migrations')->end()
+
                 ->arrayNode('migrations_paths')
 
                     ->info('A list of pairs namespace/path where to look for migrations.')
                     ->requiresAtLeastOneElement()
-                    ->useAttributeAsKey('name')
+                    ->useAttributeAsKey('namespace')
                     ->defaultValue(['%kernel.root_dir%/DoctrineMigrations' => 'Application\Migrations'])
                     ->prototype('scalar')->end()
                     ->validate()

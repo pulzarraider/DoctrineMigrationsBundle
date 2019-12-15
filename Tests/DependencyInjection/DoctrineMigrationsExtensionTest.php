@@ -13,8 +13,11 @@ use Doctrine\Migrations\Metadata\Storage\MetadataStorage;
 use Doctrine\Migrations\Metadata\Storage\TableMetadataStorageConfiguration;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use function assert;
 use function method_exists;
@@ -22,6 +25,25 @@ use function sys_get_temp_dir;
 
 class DoctrineMigrationsExtensionTest extends TestCase
 {
+    public function testXmlConfigs() : void
+    {
+        $container = $this->getContainer();
+
+        $conn = $this->createMock(Connection::class);
+        $container->set('doctrine.dbal.default_connection', $conn);
+
+        $container->registerExtension(new DoctrineMigrationsExtension());
+        $container->setAlias('doctrine.migrations.configuration.test', new Alias('doctrine.migrations.configuration', true));
+
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Fixtures'));
+        $loader->load('conf.xml');
+
+        $container->compile();
+
+        $config = $container->get('doctrine.migrations.configuration.test');
+        $this->assertConfigs($config);
+    }
+
     public function testFullConfig() : void
     {
         $container = $this->getContainer();
@@ -62,6 +84,11 @@ class DoctrineMigrationsExtensionTest extends TestCase
 
         $config = $container->get('doctrine.migrations.configuration');
 
+        $this->assertConfigs($config);
+    }
+
+    private function assertConfigs(?object $config) : void
+    {
         self::assertInstanceOf(Configuration::class, $config);
         self::assertSame('Doctrine Sandbox Migrations', $config->getName());
         self::assertSame([

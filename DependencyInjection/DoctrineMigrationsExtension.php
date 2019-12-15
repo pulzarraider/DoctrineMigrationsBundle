@@ -134,6 +134,6 @@ class DoctrineMigrationsExtension extends Extension
 
     public function getNamespace() : string
     {
-        return 'http://symfony.com/schema/dic/doctrine/migrations';
+        return 'http://symfony.com/schema/dic/doctrine/migrations/3.0';
     }
 }
