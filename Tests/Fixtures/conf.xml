@@ -1,0 +1,7 @@
+<doctrine:config
+        xmlns:doctrine="http://symfony.com/schema/dic/doctrine/migrations"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://symfony.com/schema/dic/doctrine/migrations http://symfony.com/schema/dic/doctrine/migrations/doctrine_migrations-1.0.xsd"
+>
+    <doctrine:name>aaa</doctrine:name>
+</doctrine:config>

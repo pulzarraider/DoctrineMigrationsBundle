@@ -13,8 +13,10 @@ use Doctrine\Migrations\Metadata\Storage\MetadataStorage;
 use Doctrine\Migrations\Metadata\Storage\TableMetadataStorageConfiguration;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use function assert;
 use function method_exists;
@@ -22,6 +24,51 @@ use function sys_get_temp_dir;
 
 class DoctrineMigrationsExtensionTest extends TestCase
 {
+    private function assertConfigs(?object $config): void
+    {
+        self::assertInstanceOf(Configuration::class, $config);
+        self::assertSame('Doctrine Sandbox Migrations', $config->getName());
+        self::assertSame([
+            'DoctrineMigrationsTest' => 'a',
+            'DoctrineMigrationsTest2' => 'b',
+
+        ], $config->getMigrationDirectories());
+
+        self::assertSame(['Foo', 'Bar'], $config->getMigrationClasses());
+        self::assertTrue($config->isAllOrNothing());
+        self::assertTrue($config->isDatabasePlatformChecked());
+        self::assertTrue($config->areMigrationsOrganizedByYearAndMonth());
+
+        $storage = $config->getMetadataStorageConfiguration();
+        self::assertInstanceOf(TableMetadataStorageConfiguration::class, $storage);
+
+        self::assertSame('doctrine_migration_versions_test', $storage->getTableName());
+        self::assertSame('doctrine_migration_column_test', $storage->getVersionColumnName());
+        self::assertSame(2000, $storage->getVersionColumnLength());
+        self::assertSame('doctrine_migration_execution_time_column_test', $storage->getExecutionTimeColumnName());
+        self::assertSame('doctrine_migration_executed_at_column_test', $storage->getExecutedAtColumnName());
+    }
+
+    public function testXmlConfigs() : void
+    {
+        $container = $this->getContainer();
+
+        $extension = new DoctrineMigrationsExtension();
+        $container->registerExtension($extension);
+
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Fixtures'));
+        $loader->load('conf.xml');
+
+        $container->loadFromExtension('doctrine_migrations');
+
+        $container->getDefinition('doctrine.migrations.configuration')->setPublic(true);
+        $container->compile();
+
+        $config = $container->get('doctrine.migrations.configuration');
+
+        $this->assertConfigs($config);
+    }
+
     public function testFullConfig() : void
     {
         $container = $this->getContainer();
@@ -59,27 +106,7 @@ class DoctrineMigrationsExtensionTest extends TestCase
 
         $config = $container->get('doctrine.migrations.configuration');
 
-        self::assertInstanceOf(Configuration::class, $config);
-        self::assertSame('Doctrine Sandbox Migrations', $config->getName());
-        self::assertSame([
-            'DoctrineMigrationsTest' => 'a',
-            'DoctrineMigrationsTest2' => 'b',
-
-        ], $config->getMigrationDirectories());
-
-        self::assertSame(['Foo', 'Bar'], $config->getMigrationClasses());
-        self::assertTrue($config->isAllOrNothing());
-        self::assertTrue($config->isDatabasePlatformChecked());
-        self::assertTrue($config->areMigrationsOrganizedByYearAndMonth());
-
-        $storage = $config->getMetadataStorageConfiguration();
-        self::assertInstanceOf(TableMetadataStorageConfiguration::class, $storage);
-
-        self::assertSame('doctrine_migration_versions_test', $storage->getTableName());
-        self::assertSame('doctrine_migration_column_test', $storage->getVersionColumnName());
-        self::assertSame(2000, $storage->getVersionColumnLength());
-        self::assertSame('doctrine_migration_execution_time_column_test', $storage->getExecutionTimeColumnName());
-        self::assertSame('doctrine_migration_executed_at_column_test', $storage->getExecutedAtColumnName());
+        $this->assertConfigs($config);
     }
 
     public function testCustomSorter() : void
