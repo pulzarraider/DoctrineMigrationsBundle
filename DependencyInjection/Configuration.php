@@ -51,7 +51,7 @@ class Configuration implements ConfigurationInterface
                     ->info('A list of pairs namespace/path where to look for migrations.')
                     ->requiresAtLeastOneElement()
                     ->useAttributeAsKey('namespace')
-                    ->defaultValue(['%kernel.root_dir%/DoctrineMigrations' => 'Application\Migrations'])
+                    ->defaultValue(['%kernel.project_dir%/src/Migrations' => 'App\Migrations'])
                     ->prototype('scalar')->end()
                     ->validate()
                         ->ifTrue(static function ($v) {
