@@ -62,6 +62,12 @@
 
             <tag name="console.command" command="doctrine:migrations:status" />
         </service>
+        <service id="doctrine_migrations.sync_metadata_command" class="Doctrine\Migrations\Tools\Console\Command\SyncMetadataCommand">
+            <argument>doctrine:migrations:sync-metadata-storage</argument>
+            <argument type="service" id="doctrine.migrations.dependency_factory"/>
+
+            <tag name="console.command" command="doctrine:migrations:sync-metadata-storage" />
+        </service>
         <service id="doctrine_migrations.up_to_date_command" class="Doctrine\Migrations\Tools\Console\Command\UpToDateCommand">
             <argument>doctrine:migrations:up-to-date</argument>
             <argument type="service" id="doctrine.migrations.dependency_factory"/>
